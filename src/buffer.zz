@@ -1,0 +1,124 @@
+using <string.h>::{ memset, memcpy, strlen }
+using allocator::{ malloc, free }
+
+/**
+ */
+theory static_size(Buffer *self) -> bool;
+
+/**
+ */
+export struct Buffer+ {
+  usize size;
+  u8 bytes[];
+}
+
+/**
+ */
+export fn alloc(usize length) -> Buffer *
+  model static_size(return)
+  model safe(return)
+{
+  usize size = length + as<usize>(sizeof(Buffer));
+  static_attest(size > 0);
+
+  Buffer mut *buffer = (Buffer mut *) malloc(size);
+  static_attest(safe(buffer));
+
+  memset(buffer, 0, size);
+
+  buffer->size = length;
+  static_attest(static_size(buffer));
+  return buffer;
+}
+
+/**
+ */
+export fn init(Buffer+L mut *self) -> Buffer mut *
+  model static_size(self)
+{
+  memset(self->bytes, 0, L);
+  static_attest(static_size(self));
+  return self;
+}
+
+/**
+ */
+export fn write(
+  Buffer+L mut *self,
+  u8 *bytes,
+  usize offset,
+  usize length
+) -> usize
+  where offset + length <= L
+  where length > 0
+  where len(bytes) >= length
+  where len(self->bytes) >= length
+  where len(self->bytes) > offset
+  model static_size(self)
+  model self->size == L
+  model return <= L
+{
+  self->size = L;
+  static_attest(self->size == L);
+
+  memcpy(self->bytes + offset, bytes, length);
+
+  static_attest(length <= L);
+  static_attest(static_size(self));
+
+  return length;
+}
+
+/**
+ */
+export fn read(
+  Buffer+L *self,
+  u8 mut *bytes,
+  usize offset,
+  usize length
+) -> usize
+  where length > 0
+  where length <= L
+  where len(bytes) >= length
+  where offset < len(self->bytes)
+  model static_size(self)
+  model return <= L
+{
+  memcpy(bytes, self->bytes + offset, length);
+
+  static_attest(static_size(self));
+
+  return length;
+}
+
+/**
+ */
+export fn length(Buffer+L mut *self) -> usize
+  model static_size(self)
+  model return == L
+{
+  self->size = as<usize>(L);
+  static_attest(static_size(self));
+  return self->size;
+}
+
+/**
+ */
+export fn pointer(Buffer+L *self) -> void mut *
+  model safe(return)
+  model len(return) >= L
+{
+  return as<void mut *>(self->bytes);
+}
+
+/**
+ */
+export fn copy(Buffer+L *self, Buffer+L2 mut *out, usize offset) -> usize
+  where offset < len(out->bytes)
+  where len(self->bytes) <= len(out->bytes)
+  where L2 > 0
+{
+  static_attest(len(out->bytes) == L2);
+  memcpy(out->bytes + offset, self->bytes, (usize) L);
+  return L;
+}

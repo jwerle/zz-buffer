@@ -1,0 +1,28 @@
+using zz_buffer::{ Buffer }
+
+using <string.h> as string;
+using <stdlib.h> as stdlib;
+using <stdio.h> as stdio
+
+test first {
+  stdin = "hello"
+  stdout == "hello world"
+}
+
+fn main() -> int {
+  Buffer+11 mut hello_world;
+  Buffer+5 mut hello;
+  Buffer+5 mut world;
+  u8 mut out[6] = {0};
+
+  world.write((u8 *) "world", 0, 5);
+  stdio::fgets(hello.pointer(), hello.length() + 1, stdio::stdin);
+
+  hello_world.write(hello.pointer(), 0, hello.length());
+  hello_world.write(world.pointer(), hello.length(), world.length());
+  hello_world.read(out, 0, hello.length());
+  stdio::printf("%s ", out);
+  hello_world.read(out, hello.length(), world.length());
+  stdio::printf("%s", out);
+  return 0;
+}
