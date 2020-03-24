@@ -12,23 +12,8 @@ export struct Buffer+ {
   u8 bytes[];
 }
 
-/**
- */
-export fn alloc(usize length) -> Buffer *
-  model static_size(return)
-  model safe(return)
-{
-  usize size = length + as<usize>(sizeof(Buffer));
-  static_attest(size > 0);
-
-  Buffer mut *buffer = (Buffer mut *) malloc(size);
-  static_attest(safe(buffer));
-
-  memset(buffer, 0, size);
-
-  buffer->size = length;
-  static_attest(static_size(buffer));
-  return buffer;
+export fn alloc(Buffer+t mut new *self) {
+  self->init();
 }
 
 /**

@@ -1,4 +1,4 @@
-using zz_buffer::{ Buffer }
+using zz_buffer::{ alloc, Buffer }
 
 using <string.h> as string;
 using <stdlib.h> as stdlib;
@@ -14,6 +14,8 @@ fn main() -> int {
   Buffer+5 mut hello;
   Buffer+5 mut world;
   u8 mut out[6] = {0};
+
+  new+8 mut buffer = alloc();
 
   world.write((u8 *) "world", 0, 5);
   stdio::fgets(hello.pointer(), hello.length() + 1, stdio::stdin);
